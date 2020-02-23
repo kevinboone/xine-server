@@ -33,6 +33,10 @@
 //   one station per line
 #define SEPARATOR "____"
 
+// The top row of the select window -- used to determine where a 
+//   mouse click has landed
+#define SELECT_WINDOW_TOP 5
+
 /*==========================================================================
 
   program_update_select_window 
@@ -52,12 +56,14 @@ static void program_update_select_window (WINDOW *select_window,
   int row = 0;
   int height;
   int width;
+  getmaxyx (select_window, height, width);
+  mvwaddstr (select_window, 1, 0, "^");
+  mvwaddstr (select_window, height - 2, 0, "v");
   if (list)
     {
     int l = list_length ((List *)list);
     if (l > 0)
       {
-      getmaxyx (select_window, height, width);
       height -= 2; // ignore box rows
       while (index < l  && row < height)
         {
@@ -296,8 +302,8 @@ void program_create_windows (WINDOW *main_window, WINDOW **_status_window,
   WINDOW *status_window = subwin (main_window, 5, COLS, 0, 0);
   int select_height = LINES - 4 - 6;
   WINDOW *select_window = subwin (main_window, select_height + 2,  
-    COLS, 5, 0); 
-  WINDOW *message_window = subwin (main_window, 3, COLS, LINES-3, 0); 
+    COLS, SELECT_WINDOW_TOP, 0); 
+  WINDOW *message_window = subwin (main_window, 3, COLS, LINES - 3, 0); 
 
   *_select_window = select_window; 
   *_status_window = status_window;
@@ -465,113 +471,73 @@ void program_volume_down (WINDOW *message_window, const char *host, int port)
 
 /*==========================================================================
 
-  program_main_loop
+  program_handle_key
 
 ==========================================================================*/
-void program_main_loop (const char *host, int port, List *streams,
-       int col_code)
+void program_handle_key (const char *host, int port, List *streams, 
+       int key, WINDOW *main_window, WINDOW *status_window,
+       WINDOW *select_window, WINDOW *message_window, char **station,
+       int *message_showed_for, int select_height, int *selection_index,
+       int *first_index_on_screen)
   {
-      WINDOW *main_window = initscr();
-      halfdelay (10);  // 1 sec
-      noecho();
-      keypad (stdscr, TRUE);
-      curs_set (0);
-      start_color ();
-      init_pair (1, col_code, COLOR_BLACK);
-
-    int message_showed_for = 0;
-    
-
-      int select_height = 0;
-      WINDOW *status_window = NULL;
-      WINDOW *message_window = NULL;
-      WINDOW *select_window = NULL;
-      const char *station = NULL;
-
-      program_create_windows (main_window, &status_window, &select_window,
-         &message_window, &select_height);
-
-      program_update_status_window (host, port, station, status_window); 
-      program_set_message (message_window, 
-         NAME " version " VERSION " -- press 'h' for help"); 
-      message_showed_for = 1;
-
-      int selection_index = 0;
-      int first_index_on_screen = 0;
-      program_update_select_window (select_window, streams, 
-	selection_index, first_index_on_screen);
-      int ch = 0;
-      while ((ch = getch ()) != 27 /* esc */ && ch != 'q' && ch != 'Q')
-	{
-	switch (ch)
-	  {
-	  int l;
-	  case 'h':
-	  case 'H':
-	    show_help (main_window, status_window, station, host, port); 
+  switch (key)
+    {
+    int l;
+    case 'h':
+    case 'H':
+	    show_help (main_window, status_window, *station, host, port); 
 	    program_update_select_window (select_window, streams, 
-              first_index_on_screen, selection_index);
+              *first_index_on_screen, *selection_index);
 	    break;
-	  case 'u':
-	  case 'U':
-	    program_volume_up (message_window, host, port);
+    case 'u':
+    case 'U':
+            program_volume_up (message_window, host, port);
 	    break;
-	  case 'd':
-	  case 'D':
+    case 'd':
+    case 'D':
 	    program_volume_down (message_window, host, port);
 	    break;
-	  case ' ':
+    case ' ':
 	    program_play_pause (host, port);
-            program_update_status_window (host, port, station, status_window);
+            program_update_status_window (host, port, *station, status_window);
 	    break;
-          case KEY_RESIZE:
-            delwin (status_window);
-            delwin (select_window);
-            delwin (status_window);
-            program_create_windows (main_window, &status_window, &select_window,
-               &message_window, &select_height);
-            program_update_status_window (host, port, station, status_window);
-	    program_update_select_window (select_window, streams, 
-              first_index_on_screen, selection_index);
-            program_set_message (message_window, "");
-           break;
-	  case KEY_DOWN:
+    case KEY_DOWN:
 	    l = list_length (streams);
-	    if (selection_index < l - 1) selection_index++;
-	    if (selection_index - first_index_on_screen >= select_height)
-	      first_index_on_screen = selection_index - select_height + 1; 
+	    if (*selection_index < l - 1) (*selection_index)++;
+	    if (*selection_index - *first_index_on_screen >= select_height)
+	      *first_index_on_screen = *selection_index - select_height + 1; 
 	    program_update_select_window (select_window, streams, 
-              first_index_on_screen, selection_index);
+              *first_index_on_screen, *selection_index);
 	    break;
-	  case KEY_NPAGE:
+    case KEY_NPAGE:
 	    l = list_length (streams);
-	    selection_index += select_height;
-	    if (selection_index >= l) selection_index = l - 1;
-	    if (selection_index - first_index_on_screen >= select_height)
-	      first_index_on_screen = selection_index - select_height + 1; 
+	    *selection_index += select_height;
+	    if (*selection_index >= l) *selection_index = l - 1;
+	    if (*selection_index - *first_index_on_screen >= select_height)
+	      *first_index_on_screen = *selection_index - select_height + 1; 
 	    program_update_select_window (select_window, streams, 
-              first_index_on_screen, selection_index);
+              *first_index_on_screen, *selection_index);
 	    break;
-	  case KEY_UP:
+    case KEY_UP:
 	    l = list_length (streams);
-	    if (selection_index > 0) selection_index--;
-	    if (selection_index - first_index_on_screen < 0)
-	      first_index_on_screen = selection_index; 
+	    if (*selection_index > 0) (*selection_index)--;
+	    if (*selection_index - *first_index_on_screen < 0)
+	      *first_index_on_screen = *selection_index; 
 	    program_update_select_window (select_window, streams, 
-              first_index_on_screen, selection_index);
+              *first_index_on_screen, *selection_index);
 	    break;
-	  case KEY_PPAGE:
+    case KEY_PPAGE:
 	    l = list_length (streams);
-	    if (selection_index > 0) selection_index -= select_height;
-	    if (selection_index < 0) selection_index = 0;
-	    if (selection_index - first_index_on_screen < 0)
-	      first_index_on_screen = selection_index; 
+	    if (*selection_index > 0) *selection_index -= select_height;
+	    if (*selection_index < 0) *selection_index = 0;
+	    if (*selection_index - *first_index_on_screen < 0)
+	      *first_index_on_screen = *selection_index; 
 	    program_update_select_window (select_window, streams, 
-              first_index_on_screen, selection_index);
+              *first_index_on_screen, *selection_index);
 	    break;
-	  case 10: // Enter
+    case 10: // Enter
 	    {
-	    const char *_selected = list_get (streams, selection_index);
+	    const char *_selected = list_get (streams, *selection_index);
 	    char *selected = strdup (_selected);
 	    char *sep = strstr (selected, SEPARATOR);
 	    if (sep)
@@ -579,50 +545,166 @@ void program_main_loop (const char *host, int port, List *streams,
 	      *sep = 0;
               char *error = NULL;
 	      program_stop (host, port);
-              station = NULL;
+              *station = NULL;
 
-              program_update_status_window (host, port, station, 
+              program_update_status_window (host, port, *station, 
                  status_window); 
               
               program_set_message (message_window, "Requesting...");
 	      if (program_play_stream (host, port, selected, &error))
                 {
 	        char *sep = strstr (_selected, SEPARATOR);
-                station = sep + 4;
+                *station = sep + 4;
                 program_set_message (message_window, "OK");
-                message_showed_for = 1;
+                *message_showed_for = 1;
                 }
               else
                 {
                 program_set_message (message_window, error);
-                message_showed_for = 1;
+                *message_showed_for = 1;
                 free (error);
                 }
 	      }
 	    free (selected);
 	    }
 	    break;
-	  case ERR:
-            program_update_status_window (host, port, station, status_window); 
-            if (message_showed_for > 0)
+    default:;
+    }
+
+  }
+
+
+/*==========================================================================
+
+  program_main_loop
+
+==========================================================================*/
+void program_main_loop (const char *host, int port, List *streams,
+       int col_code)
+  {
+  WINDOW *main_window = initscr();
+  halfdelay (10);  // 1 sec
+  noecho();
+  keypad (stdscr, TRUE);
+  curs_set (0);
+  start_color ();
+  mouseinterval (0);
+  init_pair (1, col_code, COLOR_BLACK);
+   mousemask(ALL_MOUSE_EVENTS, NULL);
+  int message_showed_for = 0;
+    
+
+  int select_height = 0;
+  WINDOW *status_window = NULL;
+  WINDOW *message_window = NULL;
+  WINDOW *select_window = NULL;
+  char *station = NULL;
+
+  program_create_windows (main_window, &status_window, &select_window,
+         &message_window, &select_height);
+
+  program_update_status_window (host, port, station, status_window); 
+  program_set_message (message_window, 
+         NAME " version " VERSION " -- press 'h' for help"); 
+  message_showed_for = 1;
+
+  int selection_index = 0;
+  int first_index_on_screen = 0;
+  program_update_select_window (select_window, streams, 
+	selection_index, first_index_on_screen);
+  int ch = 0;
+  while ((ch = getch ()) != 27 /* esc */ && ch != 'q' && ch != 'Q')
+    {
+    switch (ch)
+      {
+      MEVENT event;
+
+      case KEY_MOUSE:
+        if (getmouse(&event) == OK)
+          {
+          if (event.bstate & (BUTTON1_CLICKED || BUTTON1_PRESSED))
+            {
+            BOOL handled = FALSE;
+            int mouse_row_offset = event.y - SELECT_WINDOW_TOP - 1;
+            if (!handled)
               {
-              message_showed_for++;
-              if (message_showed_for == 5) 
+              if (event.x == 0 || event.x == 1)
                 {
-	        program_set_message (message_window, ""); // Clear old errors
-                message_showed_for = 0;
+                if (mouse_row_offset == 0)
+                  { 
+                  program_handle_key (host, port, streams, KEY_PPAGE, 
+                    main_window,  
+                    status_window, select_window, message_window, &station,
+                    &message_showed_for, select_height, &selection_index,
+                    &first_index_on_screen);
+                  }
+                else if (mouse_row_offset == select_height - 1)
+                  { 
+                  program_handle_key (host, port, streams, KEY_NPAGE, 
+                    main_window,  
+                    status_window, select_window, message_window, &station,
+                    &message_showed_for, select_height, &selection_index,
+                    &first_index_on_screen);
+                  }
                 }
               }
-	    break;
-	  default:;
-	  }
-	}
+            if (!handled)
+              {
+              // See if the mouse is in the select window
+              if (event.x > 1 && 
+                   mouse_row_offset >= 0 && mouse_row_offset < select_height)
+                { 
+                int index_hit = mouse_row_offset + first_index_on_screen;
+                selection_index = index_hit;
+	        program_update_select_window (select_window, streams, 
+                        first_index_on_screen, selection_index);
+                program_handle_key (host, port, streams, 10, main_window,  
+                  status_window, select_window, message_window, &station,
+                  &message_showed_for, select_height, &selection_index,
+                  &first_index_on_screen);
+                handled = TRUE;
+                }
+              }
+            }
+          }
+      break;
 
-      delwin (status_window);
-      delwin (select_window);
-      delwin (message_window);
-      delwin (main_window);
-      endwin();	
+      case KEY_RESIZE:
+        delwin (status_window);
+        delwin (select_window);
+        delwin (status_window);
+        program_create_windows (main_window, &status_window, &select_window,
+               &message_window, &select_height);
+        program_update_status_window (host, port, station, status_window);
+	program_update_select_window (select_window, streams, 
+          first_index_on_screen, selection_index);
+        program_set_message (message_window, "");
+      break;
+      case ERR: // No input
+        program_update_status_window (host, port, station, status_window); 
+        if (message_showed_for > 0)
+          {
+          message_showed_for++;
+          if (message_showed_for == 5) 
+            {
+	    program_set_message (message_window, ""); // Clear old errors
+            message_showed_for = 0;
+            }
+          }
+      break;
+      default:
+        program_handle_key (host, port, streams, ch, main_window,  
+          status_window, select_window, message_window, &station,
+          &message_showed_for, select_height, &selection_index,
+          &first_index_on_screen);
+      }
+    }
+
+  delwin (status_window);
+  delwin (select_window);
+  delwin (message_window);
+  delwin (main_window);
+  endwin();	
   }
 
 /*==========================================================================

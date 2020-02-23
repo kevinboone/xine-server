@@ -1,5 +1,5 @@
 NAME    := xsradio
-VERSION := 1.0a
+VERSION := 1.0b
 CC      :=  gcc 
 LIBS    := -lncursesw ${EXTRA_LIBS} 
 TARGET	:= $(NAME)

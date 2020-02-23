@@ -4,10 +4,14 @@ Version 1.0a, February 2020
 
 ## What is this?
 
-`xsradio` is a simple console-based Internet radio stream selector, 
-for use with the `xine-server` audio server, particularly on an
-embedded Linux system. It uses the `ncurses` library to provide
-a simple user interface. 
+`xsradio` is a simple console-based Internet radio stream
+selector, for use with the `xine-server` audio server,
+particularly on an embedded Linux system. It uses the `ncurses`
+library to provide a simple user interface. 
+
+`xsradio` is designed to be able to run in a Linux kernel
+console, that is, without any kind of graphical user
+interface installed.
 
 ## Prerequisites
 
@@ -120,11 +124,44 @@ in either of the RC files: `/etc/xsradio.rc` and `$HOME/.xsradio.rc`.
 The command line options take precedence over the RC files.
 
 
-## Notes
 
-xxx
+## Mouse support
 
+`xsradio` has very rudimentary mouse support. You can page through
+the station list using the up and down markers (`v` and '^'), and
+play a station by clicking on its name. Mouse support will
+work -- after a fashion -- in a Linux kernel console (see below) 
+if `gpm` is running. `gpm` needs to know about the specific
+type of mouse attched. Most modern USB mice support the PS/2 protocol,
+so you can run `gpm` like this:
 
+    gpm -m /dev/input/mice -t imps2
+
+When running `xsradio` in an X terminal emulator, `ncurses` should
+emulate a mouse automatically.
+
+## Linux kernel console support
+
+`xsradio` is designed to be able to run in a kernel console,
+that is, the console that is available on Linux in the absence
+of any graphical desktop. There are two main limitations with
+most of operation.
+
+First, to get even rudimentary mouse support, you will
+need to be running `gpm`, and to have a version of the
+`ncurses` library that is sufficiently up-to-date to be able
+to auto-detect `gpm` (essentially, version 6.0 and later).
+
+Second, the kernel console has by default only a limited range
+of symbols in its font. Many consoles only support 
+8-bit characters, anyway. So although `xradio` can be
+made fully UTF-8 aware, if linked with the 'wide character`
+version of `ncurses`, the console may not be able to 
+display anything other than ASCII characters and box
+graphics. 
+
+These are limitations of the console, and cannot be overcome
+in `xsradio`.  
 
 ## Author and legal
 
@@ -134,10 +171,11 @@ you may use the software however you wish, so long as the source
 code continues to be made available, and the original author is
 acknowledged. There is no warranty of any kind.
 
+## Revision history
 
+1.0a Feb 2020<br/>
+First working release
 
-
-gpm -m /dev/input/mice -t imps2
-
-
+1.0b Feb 2020<br/>
+Added preliminary mouse support
 

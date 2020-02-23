@@ -2,7 +2,7 @@
 
 A network-controllable audio player with a C API
 
-Version 1.0a, February 2020
+Version 1.0b, February 2020
 
 Please be aware that this is a work in progress, and may not be of
 production quality.
