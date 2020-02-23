@@ -1,0 +1,100 @@
+.\" Copyright (C) 2020 Kevin Boone 
+.\" Permission is granted to any individual or institution to use, copy, or
+.\" redistribute this software so long as all of the original files are
+.\" included, that it is not sold for profit, and that this copyright notice
+.\" is retained.
+.\"
+.TH xine-server 1 "Feb 2020"
+.SH NAME
+xine-server
+.SH SYNOPSIS
+.B xine-server\ [options]
+.PP
+
+.SH DESCRIPTION
+\fIxine-server\fR is an audio player that can be controlled by a simple
+line-by-line textual network protocol. It is based on the Xine 
+library, and can
+play most audio files and streams in widespread use. \fIxine-server\fR is
+intended for use as a back-end audio player in an embedded Linux system,
+but may have more general applicability -- multi-room audio, for example.
+
+\fIxine-server\fR is intended to run quietly in the background, until it is
+contacted by a client. Because each client interaction is self-contained
+and should not take any significant time, the server will service
+multiple concurrent clients (if necessary). Although this should not
+be visible to clients, \fIxine-server\fR actually only services one client
+request at a time -- there is no internal concurrency, to avoid the potential
+for multi-threading problems that might otherwise develop.
+
+When completely idle, \fIxine-server\fR uses only a few megabytes of memory
+and no CPU. However, whether it can be left running from boot depends
+on the general configuration of the system. Once \fIxine-server\fR has
+opened an audio driver, it will not release it until it shuts down.
+Depending on the audio driver in use, this may prevent other applications
+playing audio. 
+
+\fIxine-server\fR maintains a playlist and, once the playlist has been
+populated by a client, will play the items in the playlist one
+after another. Clients can change the play order, pause playback,
+stop playback, and manage the playlist. Clients can also 
+retrieve information about the playlist and the item being played.
+For more information on capabilities, see the "Protocol" section
+below.
+
+.SH "OPTIONS"
+
+.TP
+.BI -c,\-\-config
+.LP
+Specify a location for the Xine engine configuration file. The default
+is not to use one, as configuration defaults are workable on many
+systems. You might need to specify a configuration file if you
+have multiple audio devices, and need to force output to a specific one.
+
+A sample configuration file is provided in the source code bundle.
+.TP
+.BI \-\-debug
+.LP
+Run in debug mode -- do not detach from console, and enable
+verbose logging.
+.TP
+.BI -d,\-\-driver
+.LP
+Set the Xine audio driver. On a Linux system, suitable drivers 
+are likely to include
+`alsa`, `pulseaudio`, and `oss`. If no driver is specified,
+Xine will auto-detect. This will usually result in the pulseaudio
+driver being used, if the system supports it.
+.TP
+.BI -h,\-\-host=IP
+.LP
+Set the IP number of the interface the server will bind to.
+The default is 127.0.0.1, `localhost`. This default provides a
+small modicum of security -- only processes on the same host
+will be able to control the server.
+
+You can bind to a specific IP number, or use `-h 0.0.0.0` to
+bind to all IP interfaces. Both approaches need to be used
+with caution, since `xine-server` has no security.
+.TP
+.BI \-\-list\-drivers
+.LP
+Print a list of audio drivers, and then exit
+.BI \-\-log\-level
+.LP
+Set the logging level from 0-5. Levels higher than 3 will be extremely
+verbose, and will only be comprehensible alongside the source code.
+This option is only used in debug mode.
+.TP
+.BI -p,\-\-port
+.LP
+TCP port on which to listen for connections from clients.
+
+.SH "PROTOCOL"
+
+See the file README.protocol in the source code bundle,
+for full details of the protocol.
+
+
+.\" end of file

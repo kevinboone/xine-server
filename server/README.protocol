@@ -1,0 +1,162 @@
+The protocol is single-line; that is, the client sends one line, and
+the server responds with one (perhaps long) line.
+
+The client's command is expected to be terminated with 
+\r\n (0x0D 0x0A, CRLF). The use of
+CRLF here is to make it easier to test using a simple telnet client, without 
+fiddling with settings. The server's response is terminated in a \n
+only. 
+
+Both the client's command, and the server's response, may use
+double-quotes to protect data that contains spaces. The server
+will render an actual double-quote (e.g., in a filename) as
+`\"`, and clients should do the same.
+
+The response from the server will always begin with a numeric
+code (see `xine-server-api.h` for a list of all codes),
+which will be zero if the command was executed successfully.
+The code will be followed by text, whose interpretation depends on
+the command.  
+In most cases, the textual response
+from a successful command is simply `OK`. 
+
+`add {stream}...`
+
+Adds one or more streams to the playlist. Clients should add as many
+items as they can in a single operation, as each add operation results in
+a change notification event.
+
+`stream` should be enclosed in double-quotes if it contains spaces.
+The stream can be a local file or a URI. If it is a local file, it
+almost certainly ought to be a full pathname. 
+
+Response is `0 OK` or a numeric error code followed by a message. If the 
+stream is a local file, `xine-server` will respond with an error if
+the file is not readable, but there is no check at this stage whether
+it can actually play. If the stream is not a local file, it is not
+checked at all.
+
+When multiples streams or files are added, the operation stops if any
+addition results in an error -- the rest of the items are ignored.
+
+`eq [b1 b2 b3 b4 b5 b6 b7 b8 b9 b10]`
+
+Report or set equalizer levels. Xine has ten equalizer bands, each
+of which takes a value between -100 and +100; 0 is the central value.
+Like many software equalizers, the 'flat' (all zero) position is actually
+taken to be "all maximum". As soon as any value is non-zero, the overall
+volume level is reduced, so that no EQ setting can cause clipping.
+To use the equalizer properly, we ought to reduce the overall volume
+to about 50% when all the equalizer levels are zero; but who would want
+to waste dynamic range like this? This isn't just a problem with Xine --
+most digital audio players outside the recording studio have similar
+restrictions.
+
+`meta-info`
+
+Return meta-info (tags, and general inforamtion) about the item
+currently playing.
+
+Be aware that Xine's extraction of meta-info is not particularly
+useful, and may be inaccurate. First, Xine doesn't seem to have a way
+of dealing with ID3 tags that are not encoded in UTF-8, and it doesn't
+(so far as I know) have a way of communicating the encoding used
+to its users. Second, Xine does not always report tags even when they
+are
+undeniably present, for reasons that are unclear. Client applications
+that are working on local files can probably get better information
+by using an existing tag-reading library, than relying on values reported
+by Xine. For radio streams, though, demultiplexing the stream is usually
+necessary to get the meta-info, which is a bigger job.
+
+Meta-info text items that are not present are reported as "-". If nothing
+is playing, all text items are reported as "-".
+
+The format of a successful response is:
+
+    0 bitrate seekable "title" "artist" "genre" "album" "composer"
+
+Clients should be prepared for any or all values to be enclosed in 
+double-quotes, as some elements may contain embedded spaces. 
+
+The `bitrate` value is in bits per second. `seekable` is either 1 or 0,
+depending on whether the stream supports seeking or not
+
+`next`
+
+Play the next item in the playlist. An error will be reported
+if the playlist position is already at the end.
+
+`pause`
+
+Pause playback. It is not considered an error to pause when playback is
+already paused, or when nothing is playing -- this would just be
+_too_ fussy. But pause will, of course, have no effect in such
+circumstances. Playback will resume when a new stream is played,
+whether paused or not. 
+
+`play [index]`
+
+If no argument is supplied, `play` has the opposite effect to `pause`
+-- playback is resumed.
+
+If an argument is supplied, it is treated as an index (zero-based) into
+the playlist, and playback is started from the start of that item.
+
+
+`playlist`
+
+Returns the playlist. The format of the response is
+
+    0 "item1" "item2"...
+
+all on one line. Double quotes in items are escaped as `\"`.
+
+`prev`
+
+Play the previous item in the playlist. An error will be reported
+if the playlist position is already zero.
+
+`seek {msec}`
+
+Sets the playback position in the current stream, in milliseconds.
+If the position is beyond the end of the stream, then playback of
+that stream is considered to be finished, and play continues with
+the next item in the playlist, if there is one. Thus it is possible
+to fast-forward from one file/stream to the next. It isn't
+possible to rewind from one stream to the previous one, though --
+negative values of `msec` are treated as indicating the start of the
+stream.
+
+`shutdown`
+
+Shuts down the server.
+
+`status`
+
+Reports the current playback status. The format of a successful response
+is:
+
+    0 transport_status position length "stream" playlist_index playlist_length
+
+The `stream` is surrounded by double-quotes, because it might contain spaces.
+If nothing is playing, or the
+playlist empty, `playlist\_index` will be -1 and `stream` will be `-`.
+The `position` and `length` responses are in milliseconds.
+
+`transport` status is one of `stopped`, `playing`, or `paused`.
+
+`stop`
+
+Stops playback, and resets the playlist index to "none" (-1). Always returns
+a success code.
+
+`volume [N]`
+
+With argument, sets playback volume to N, where N is a number between 0 and
+100.  See the note above about audio drivers for how this value is interpreted.
+With no argument, returns the current volume setting. Note that until
+something has been played, the value return will not be reliable. 
+
+
+

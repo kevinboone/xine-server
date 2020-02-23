@@ -1,0 +1,4 @@
+accept/reject list -- but should it not be the client's responsibility to
+  decide what files should be selected? How would this work with radio
+  streams
+Logging visible to client

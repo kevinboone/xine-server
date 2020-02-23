@@ -1,0 +1,30 @@
+## Notification
+
+Client operations on the server are generally asynchronous -- although the
+client will wait for a response, the server generally can't tell the client
+whether the operation was fully successful or not. For example, although a
+stream or file can be added successfully to the playlist, and the client's
+response to the `add` command will indicate that it was, even the server does
+not know whether the stream is actually playable or not until it actually
+tries.
+
+Consequently, there is no straightforward way for a client to know whether the
+operations it schedules on the server were successful or not, except by polling
+the server continuously. Moreover, when `xine-server` is used part of a complex
+system, there could be multiple, different clients that have an interest in
+what `xine-server` is doing.
+
+`xine-server` has a notification subsystem, but it is not fully  
+implemented -- it is envisaged that the real implementation will
+be system-specific. For example, the server might post updates to
+some lightweight message queue (e.g., Mosquitto), or perhaps multicast
+updates to interested clients. 
+
+The stub implementation is in the file `notifier.c`. All notifications
+have two numeric codes -- a class identifier and an event identifier --
+and a text (English) message. The definitions of the numeric codes
+are in `xine-server-api.h`.
+
+
+
+

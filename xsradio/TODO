@@ -1,0 +1,3 @@
+Making the screen smaller when the selection point is at the bottom
+of the list results in the selection point being invisible.
+
