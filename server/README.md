@@ -82,6 +82,14 @@ have multiple audio devices, and need to force output to a specific one.
 
 A sample configuration file is provided in the source code bundle.
 
+For example, a useful line to add for a system that has an ALSA ID of 
+`C10` is 
+
+    audio.device.alsa_front_device:plughw:CARD=C10,DEV=0
+
+If you have `aplay` installed, you can get a list of hardware devices by
+running `aplay -L`.
+
 `--debug`
 
 Run in debug mode: do not detach from controlling terminal, and enable verbose

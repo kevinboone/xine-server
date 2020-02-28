@@ -57,33 +57,31 @@ static void program_update_select_window (WINDOW *select_window,
   int height;
   int width;
   getmaxyx (select_window, height, width);
+  // Draw the up/down arrows for the mouse
   mvwaddstr (select_window, 1, 0, "^");
   mvwaddstr (select_window, height - 2, 0, "v");
-  if (list)
+  int l = list_length ((List *)list);
+  if (l > 0)
     {
-    int l = list_length ((List *)list);
-    if (l > 0)
+    height -= 2; // ignore box rows
+    while (index < l  && row < height)
       {
-      height -= 2; // ignore box rows
-      while (index < l  && row < height)
+      const char *stream = list_get ((List *)list, index);
+      const char *sep = strstr (stream, SEPARATOR);
+      const char *name = sep + 4; 
+      if (current_selection == index)
         {
-        const char *stream = list_get ((List *)list, index);
-	const char *sep = strstr (stream, SEPARATOR);
-        const char *name = sep + 4; 
-        if (current_selection == index)
-          {
-          wattron (select_window, A_REVERSE); 
-          mvwaddnstr (select_window, row + 1, 2, name, width - 3);
-          wattroff (select_window, A_REVERSE); 
-          }
-        else
-          {
-          mvwaddnstr (select_window, row + 1, 2, name, width - 3);
-          }
-   
-        index++;
-        row++;
+        wattron (select_window, A_REVERSE); 
+        mvwaddnstr (select_window, row + 1, 2, name, width - 3);
+        wattroff (select_window, A_REVERSE); 
         }
+      else
+        {
+        mvwaddnstr (select_window, row + 1, 2, name, width - 3);
+        }
+   
+      index++;
+      row++;
       }
     }
 
@@ -593,7 +591,6 @@ void program_main_loop (const char *host, int port, List *streams,
    mousemask(ALL_MOUSE_EVENTS, NULL);
   int message_showed_for = 0;
     
-
   int select_height = 0;
   WINDOW *status_window = NULL;
   WINDOW *message_window = NULL;
@@ -669,7 +666,7 @@ void program_main_loop (const char *host, int port, List *streams,
           }
       break;
 
-      case KEY_RESIZE:
+      case KEY_RESIZE: // Pseudo-key for window resize
         delwin (status_window);
         delwin (select_window);
         delwin (status_window);
