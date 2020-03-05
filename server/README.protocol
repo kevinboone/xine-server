@@ -151,6 +151,10 @@ The `position` and `length` responses are in milliseconds.
 Stops playback, and resets the playlist index to "none" (-1). Always returns
 a success code.
 
+`version`
+
+Responds with the server's version, in the form `0 X.Y`
+
 `volume [N]`
 
 With argument, sets playback volume to N, where N is a number between 0 and

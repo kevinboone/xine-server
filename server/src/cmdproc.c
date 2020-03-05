@@ -736,6 +736,11 @@ void cmdproc_do_cmd (CmdProc *self, const char *cmd, char **response)
         log_debug ("%s: Got eq command", __PRETTY_FUNCTION__);
         cmdproc_cmd_eq (self, argv, response); 
         }
+      else if (strcmp (cmd, XINESERVER_CMD_VERSION) == 0)
+        {
+        log_debug ("%s: Got version command", __PRETTY_FUNCTION__);
+        asprintf (response, "0 %s\n", VERSION);
+	}
       else
         {
         asprintf (response, "%d Unknown command %s\n", 

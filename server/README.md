@@ -1,6 +1,6 @@
 # xine-server
 
-Version 1.0a, February
+Version 1.1, March 2020
 
 ## What is this?
 

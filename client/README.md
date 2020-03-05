@@ -1,5 +1,7 @@
 # xine-client 
 
+Version 1.1, February 2020
+
 ## What is this?
 
 `xine-client` is a simple command-line utility that uses 

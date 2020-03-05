@@ -948,6 +948,44 @@ BOOL xineserver_get_volume (const char *host, int port, int *volume,
 
 /*==========================================================================
 
+  xineserver_version
+
+==========================================================================*/
+BOOL xineserver_version (const char *host, int port, int *major, 
+                            int *minor, int *error_code, char **error)
+  {
+  BOOL ret = FALSE;
+  char *command = NULL;
+  asprintf (&command, "%s", XINESERVER_CMD_VERSION);
+
+  char *response = NULL;
+  ret = xineserver_send_and_receive (host, port, command, &response, error);
+  if (ret)
+    {
+    int _error_code = xineserver_get_error_code_response (response);
+    if (_error_code != 0)
+      {
+      *error_code = _error_code;
+      if (error)
+        {
+        *error = strdup (xineserver_get_text_response (response));
+        }
+      ret = FALSE;
+      }
+    else
+      {
+      sscanf (xineserver_get_text_response (response), "%d.%d", major, minor); 
+      ret = TRUE;
+      }
+    }
+  else
+    *error_code = XINESERVER_ERR_COMM;
+  free (command);
+  return ret;
+  }
+
+/*==========================================================================
+
   xineserver_resume
 
 ==========================================================================*/

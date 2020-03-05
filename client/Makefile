@@ -1,5 +1,5 @@
 NAME    := xine-client
-VERSION := 1.0a
+VERSION := 1.1
 CC      :=  gcc 
 LIBS    := ${EXTRA_LIBS} 
 TARGET	:= $(NAME)

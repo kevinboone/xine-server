@@ -2,7 +2,7 @@
 
 A network-controllable audio player with a C API
 
-Version 1.0b, February 2020
+Version 1.1, February 2020
 
 Please be aware that this is a work in progress, and may not be of
 production quality.
@@ -42,6 +42,13 @@ A simple, ncurses-based radio stream selector, that uses the C API.
 
 Please see the README.md file in the `server` directory for more information.
 
+# Revision history
+
+Version 0.1a, February 2020<br/>
+First working version
+
+Version 1.1, March 2020<br/>
+Added 'version' command to server, client, and API
 
 ## Author and legal
 

@@ -78,6 +78,7 @@ typedef int BOOL;
 #define XINESERVER_CMD_META_INFO "meta-info"
 #define XINESERVER_CMD_SEEK      "seek"
 #define XINESERVER_CMD_EQ        "eq"
+#define XINESERVER_CMD_VERSION   "version"
 
 // XSPlaylist is an opaque structure, used with the
 //  xsplaylist_xxx funtions
@@ -236,6 +237,10 @@ BOOL   xineserver_meta_info (const char *host, int port, XSMetaInfo **mi,
 //   and advance to the next playlist item, if there is one
 BOOL   xineserver_seek (const char *host, int port, int msec, 
                             int *error_code, char **error);
+
+// Get the server major and minor versions
+BOOL   xineserver_version (const char *host, int port, int *major, 
+                            int *minor, int *error_code, char **error);
 
 // Operations on opaque data structures 
 

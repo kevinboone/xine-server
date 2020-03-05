@@ -607,6 +607,37 @@ static int program_cmd_meta_info (const ProgramContext *context,
 
 /*==========================================================================
 
+  program_cmd_version
+
+==========================================================================*/
+static int program_cmd_version (const ProgramContext *context, 
+      const char *host, int port, int argc, char **argv)
+  {
+  LOG_IN
+  int ret = 0;
+ 
+  char *error = NULL;
+  int error_code = 0;
+  int major = 0;
+  int minor = 0;
+  if (xineserver_version (host, port, &major, &minor, &error_code, &error))
+    {
+    printf ("Version %d.%d\n", major, minor);
+    }
+  else
+    {
+    fprintf (stderr, NAME " status: error %d: %s\n", error_code, error);
+    ret = -1;
+    free (error);
+    }
+
+  LOG_OUT
+  return ret;
+  }
+
+
+/*==========================================================================
+
   program_do_cmd
 
 ==========================================================================*/
@@ -647,6 +678,8 @@ static int program_do_cmd (const ProgramContext *context, const char *host,
     ret = program_cmd_seek (context, host, port, argc, argv);
   else if (strcmp (cmd, "eq") == 0)
     ret = program_cmd_eq (context, host, port, argc, argv);
+  else if (strcmp (cmd, "version") == 0)
+    ret = program_cmd_version (context, host, port, argc, argv);
   else
     {
     log_error ("Unknown command '%s'", cmd);

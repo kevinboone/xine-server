@@ -1,5 +1,7 @@
 # xine-server API
 
+Version 1.1, March 2020
+
 ## What is this?
 
 This is a simple client library for controlling `xine-server`. It consists
