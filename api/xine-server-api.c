@@ -638,6 +638,7 @@ BOOL xineserver_set_eq (const char *host, int port, int eq[10],
         }
       ret = FALSE;
       }
+    free (response);
     }
   else
     *error_code = XINESERVER_ERR_COMM;
@@ -938,6 +939,7 @@ BOOL xineserver_get_volume (const char *host, int port, int *volume,
       *volume = atoi (xineserver_get_text_response (response)); 
       ret = TRUE;
       }
+    free (response);
     }
   else
     *error_code = XINESERVER_ERR_COMM;
@@ -977,6 +979,7 @@ BOOL xineserver_version (const char *host, int port, int *major,
       sscanf (xineserver_get_text_response (response), "%d.%d", major, minor); 
       ret = TRUE;
       }
+    free (response);
     }
   else
     *error_code = XINESERVER_ERR_COMM;

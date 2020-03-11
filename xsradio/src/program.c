@@ -206,9 +206,14 @@ BOOL program_load_stream_file (const char *stream_file, List *list,
     char *line = NULL;
     while (file_readline (f, &line))
       {
-      const char *sep = strstr (line, SEPARATOR);
-      if (sep)
-        list_append (list, line);
+      const char *name = strtok (line, "\t");
+      const char *country = strtok (NULL, "\t");
+      const char *uri = strtok (NULL, "\t");
+      char *s = NULL;
+      asprintf (&s, "%s%s%s (%s)", uri, SEPARATOR, name, country);
+      list_append (list, s);
+      printf ("append = %s\n", s);
+      free (line);
       }  
     fclose (f);
     ret = TRUE;
@@ -749,7 +754,7 @@ int program_run (ProgramContext *context)
   const char *host = program_context_get (context, "host");
   if (!host) host = "localhost";
   const char *stream_file = program_context_get (context, "streams");
-  if (!stream_file) stream_file = SHARE "/streams.list";
+  if (!stream_file) stream_file = SHARE "/news_and_drama.gxsradio";
   const char *colour = program_context_get (context, "colour");
   if (!colour) colour = "green"; 
 

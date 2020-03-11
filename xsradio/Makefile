@@ -1,5 +1,5 @@
 NAME    := xsradio
-VERSION := 1.0b
+VERSION := 1.0c
 CC      :=  gcc 
 LIBS    := -lncursesw ${EXTRA_LIBS} 
 TARGET	:= $(NAME)
@@ -33,7 +33,8 @@ install: $(TARGET)
 	strip $(TARGET)
 	install -m 755 $(TARGET) $(DESTDIR)/${BINDIR}
 	mkdir -p $(SHARE)
-	install -m 644 streams.list.sample $(SHARE)/streams.list 
+	install -m 644 share/*.gxsradio $(SHARE)/
+	install -m 775 share/*.pl $(SHARE)/
 
 -include $(DEPS)
 
