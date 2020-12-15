@@ -203,6 +203,19 @@ cannot be controlled, or limited, by `xine-server`. This limitation
 is generally only noticeable in debug mode, because in normal mode
 `stdout` is suppressed anyway. 
 
+_There are problems with read-only filesystems_
+
+The kinds of application that `xine-server` is intended for often use read-only
+filesystems. This is tricky for `xine-server`, because `libxine` wants to use a 
+cache directory. This directory is `$HOME/.cache`. You can run `xine-server` with
+`$HOME` set to someplace that is writeable -- `/tmp`, for example. However, it
+still seems to fail intermittently because the file `plugins.cache` needs to be
+read before it is written (I don't know why). My solution to this problem is to
+run with `$HOME=/tmp`, but copy a pre-prepared `plugins.cache` into
+`/tmp/.cache/xine-line/`. Since this file depends on the installation, I can't provide
+it in this bundle. So it will be necessary to generate it by running `xine-server`
+on the target system until the file gets created, and then store it somewhere.
+This is all a bit nasty, frankly, but I doubt it will ever be fixed in `libxine`.
 
 ## Author and legal
 

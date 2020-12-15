@@ -20,6 +20,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <errno.h>
+#include <ctype.h>
 #include "xine-server-api.h" 
 
 /*==========================================================================
@@ -399,7 +400,8 @@ BOOL xineserver_send_and_receive (const char *host,
         }
       else
         {
-        asprintf (error, "Can't connect: %s", strerror (errno));
+        asprintf (error, "Can't connect to xine-server at %s:%d: %s", 
+	  host, port, strerror (errno));
         ret = FALSE;
         }
       }
@@ -1050,6 +1052,31 @@ BOOL xineserver_clear (const char *host, int port,
   free (command);
   return ret;
   }
+
+/*==========================================================================
+
+  xineserver_is_playable_ext
+
+==========================================================================*/
+BOOL xineserver_is_playable_ext (const char *_ext)
+  {
+  BOOL ret = FALSE;
+  char *ext = strdup (_ext);
+  int l = strlen (ext);
+  for (int j = 0; j < l; j++)
+    ext[j] = tolower (ext[j]); // Better hope extensions are ASCII 
+  if (strcmp (ext, "mp3") == 0) ret = TRUE;
+  else if (strcmp (ext, "flac") == 0) ret = TRUE;
+  else if (strcmp (ext, "ogg") == 0) ret = TRUE;
+  else if (strcmp (ext, "ac3") == 0) ret = TRUE;
+  else if (strcmp (ext, "aac") == 0) ret = TRUE;
+  else if (strcmp (ext, "m4a") == 0) ret = TRUE;
+  else if (strcmp (ext, "m4b") == 0) ret = TRUE;
+  else if (strcmp (ext, "mp3") == 0) ret = TRUE;
+  free (ext);
+  return ret;
+  }
+
 
 /*==========================================================================
 

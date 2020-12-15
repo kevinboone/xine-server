@@ -24,7 +24,7 @@ void usage_show (FILE *fout, const char *argv0)
   fprintf (fout, "Usage: %s [options]\n", argv0);
   fprintf (fout, "  -?,--help               show this message\n");
   fprintf (fout, "  -c,--config=file        configuration file (none)\n");
-  fprintf (fout, "  -d,--debug              debug mode\n");
+  fprintf (fout, "     --debug              debug mode\n");
   fprintf (fout, "  -h,--host=IP            host IP to bind to (127.0.0.1)\n");
   fprintf (fout, "  -l,--log-level=N        log level, 0-5 (default 2)\n");
   fprintf (fout, "  --list-drivers          list audio drivers\n");
