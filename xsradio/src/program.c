@@ -212,7 +212,6 @@ BOOL program_load_stream_file (const char *stream_file, List *list,
       char *s = NULL;
       asprintf (&s, "%s%s%s (%s)", uri, SEPARATOR, name, country);
       list_append (list, s);
-      printf ("append = %s\n", s);
       free (line);
       }  
     fclose (f);
